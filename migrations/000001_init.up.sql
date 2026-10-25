@@ -1,4 +1,4 @@
-CREATE SCHEMA todoapp;
+CREATE SCHEMA IF NOT EXISTS todoapp;
 
 CREATE TABLE todoapp.users(
     id           SERIAL         PRIMARY KEY,
