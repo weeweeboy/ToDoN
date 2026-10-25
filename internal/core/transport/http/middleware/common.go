@@ -3,7 +3,6 @@ package core_http_middleware
 import (
 	core_logger "ToDoN/internal/core/logger"
 	core_http_response "ToDoN/internal/core/transport/http/response"
-	"context"
 	"net/http"
 	"time"
 
@@ -39,7 +38,7 @@ func Logger(log *core_logger.Logger) Middleware {
 				zap.String("path", r.URL.String()),
 			)
 
-			ctx := context.WithValue(r.Context(), "log", l)
+			ctx := core_logger.ToContext(r.Context(), l)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})

@@ -17,6 +17,17 @@ type Logger struct {
 	file *os.File
 }
 
+type loggerContextKey struct {
+}
+
+var (
+	key = loggerContextKey{}
+)
+
+func ToContext(ctx context.Context, log *Logger) context.Context {
+	return context.WithValue(ctx, key, log)
+}
+
 func (l *Logger) With(field ...zap.Field) *Logger {
 	return &Logger{
 		Logger: l.Logger.With(field...),
@@ -25,7 +36,7 @@ func (l *Logger) With(field ...zap.Field) *Logger {
 }
 
 func FromContext(ctx context.Context) *Logger {
-	log, ok := ctx.Value("log").(*Logger)
+	log, ok := ctx.Value(key).(*Logger)
 	if !ok {
 		panic("no logger in context")
 	}

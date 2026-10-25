@@ -6,7 +6,6 @@ import (
 	core_http_request "ToDoN/internal/core/transport/http/request"
 	core_http_response "ToDoN/internal/core/transport/http/response"
 	core_http_types "ToDoN/internal/core/transport/http/types"
-	core_http_utils "ToDoN/internal/core/transport/http/utils"
 	"fmt"
 	"net/http"
 	"strings"
@@ -45,12 +44,12 @@ func (u *PatchUserRequest) Validate() error {
 
 type PatchUserResponse UserDTOResponse
 
-func (u *UsersHTTPHandler) PatchUser(rw http.ResponseWriter, r *http.Request) {
+func (h *UsersHTTPHandler) PatchUser(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)
 	responseHandler := core_http_response.NewHTTPResponseHandler(log, rw)
 
-	userID, err := core_http_utils.GetIntPathValue(r, "user_id")
+	userID, err := core_http_request.GetIntPathValue(r, "user_id")
 	if err != nil {
 		responseHandler.ErrorResponse(err, "failed to get user_id path value")
 		return
@@ -64,7 +63,7 @@ func (u *UsersHTTPHandler) PatchUser(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	userPatch := userPatchFromRequest(request)
-	userDomain, err := u.userService.PatchUser(ctx, userID, userPatch)
+	userDomain, err := h.userService.PatchUser(ctx, userID, userPatch)
 	if err != nil {
 		responseHandler.ErrorResponse(err, "failed to patch user in service")
 		return
@@ -77,8 +76,5 @@ func (u *UsersHTTPHandler) PatchUser(rw http.ResponseWriter, r *http.Request) {
 }
 
 func userPatchFromRequest(request PatchUserRequest) domain.UserPatch {
-	return domain.UserPatch{
-		FullName:    request.FullName.ToDomain(),
-		PhoneNumber: request.PhoneNumber.ToDomain(),
-	}
+	return domain.NewUserPatch(request.FullName.ToDomain(), request.PhoneNumber.ToDomain())
 }

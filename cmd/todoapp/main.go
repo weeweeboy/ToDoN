@@ -2,7 +2,7 @@ package main
 
 import (
 	core_logger "ToDoN/internal/core/logger"
-	core_postgres_pool "ToDoN/internal/core/repository/postgres/pool"
+	core_pgx_pool "ToDoN/internal/core/repository/postgres/pool/pgx"
 	core_http_middleware "ToDoN/internal/core/transport/http/middleware"
 	core_http_server "ToDoN/internal/core/transport/http/server"
 	users_postgres_repository "ToDoN/internal/features/users/repository/postgres"
@@ -31,9 +31,15 @@ func main() {
 	logger.Debug("Start ToDo Application!")
 
 	logger.Debug("initialising connection pool")
-	pool, err := core_postgres_pool.NewConnectionPool(core_postgres_pool.NewConfigMust(), ctx)
+	//pool, err := core_postgres_pool.NewConnectionPool(core_postgres_pool.NewConfigMust(), ctx)
+	//if err != nil {
+	//	logger.Fatal("Failed to initialize postgres pool", zap.Error(err))
+	//}
+	//defer pool.Close()
+
+	pool, err := core_pgx_pool.NewConnectionPool(core_pgx_pool.NewConfigMust(), ctx)
 	if err != nil {
-		logger.Fatal("Failed to initialize postgres pool", zap.Error(err))
+		logger.Error("Failed to initialize connection pool", zap.Error(err))
 	}
 	defer pool.Close()
 
@@ -49,8 +55,8 @@ func main() {
 		logger,
 		core_http_middleware.RequestID(),
 		core_http_middleware.Logger(logger),
-		core_http_middleware.Panic(),
-		core_http_middleware.Trace())
+		core_http_middleware.Trace(),
+		core_http_middleware.Panic())
 
 	apiVersionRouter := core_http_server.NewAPIVersionRouter(core_http_server.ApiVersion1)
 	apiVersionRouter.RegisterRoutes(usersTransportHTTP.Routes()...)

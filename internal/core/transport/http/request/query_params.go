@@ -1,4 +1,4 @@
-package core_http_utils
+package core_http_request
 
 import (
 	core_errors "ToDoN/internal/core/errors"
